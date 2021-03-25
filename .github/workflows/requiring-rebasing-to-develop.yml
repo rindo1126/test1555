@@ -1,0 +1,15 @@
+name: Requiring rebasing to develop
+
+on: push
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Check
+      run: |
+        sudo apt-get install nkf
+        ./.github/workflows/requiring-rebasing-to-develop.sh "$GITHUB_REPOSITORY" "$(git branch --show-current)" "${{ secrets.GITHUB_TOKEN }}"

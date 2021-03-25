@@ -1,0 +1,33 @@
+name: Rebasing develop branch to main
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Forward develop
+      run: |
+        mail=$(curl \
+          -s \
+          -X GET \
+          -H "Accept: application/vnd.github.v3+json" \
+          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          https://api.github.com/users/$GITHUB_ACTOR \
+          | jq -r '.email')
+        if [[ "$mail"="null" ]]; then
+          mail="$GITHUB_ACTOR@users.noreply.github.com"
+        fi
+        echo $GITHUB_ACTOR $mail
+        git config --global user.name "$GITHUB_ACTOR"
+        git config --global user.email "$mail"
+        git fetch origin
+        git checkout develop
+        git rebase origin/main || exit 1
+        git push origin develop
